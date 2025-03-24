@@ -218,7 +218,9 @@ def find_or_create_directory(directory_name)
 end
 
 def is_valid_token?(root_url, token)
-  return false unless token.is_a?(String) && token =~ /^[1-9A-Za-z][^OIl]{23}$/
+  return false unless token.is_a?(String)
+    # TODO: add custom token creation
+    # && token =~ /^[1-9A-Za-z][^OIl]{23}$/
   url = "#{root_url}/submissions/validate_token?token=#{token}"
   uri = URI.parse(url)
   req = Net::HTTP::Get.new(uri, 'Content-Type' => 'application/json')
