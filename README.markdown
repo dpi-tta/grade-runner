@@ -1,6 +1,6 @@
 # grade_runner
 
-A Ruby client for [firstdraft Grades](https://grades.firstdraft.com)
+A Ruby client for [Grades](https://f5cd-98-227-60-153.ngrok-free.app)
 
 
 ## Installation

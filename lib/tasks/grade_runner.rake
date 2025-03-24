@@ -1,7 +1,7 @@
 namespace :grade_runner do
   desc "Grade project"
   task :runner do
-    default_submission_url = "https://grades.firstdraft.com"
+    default_submission_url = "https://f5cd-98-227-60-153.ngrok-free.app"
     config = {}
     path = Rails.root.join("grades.yml")
     if File.exist?(path)

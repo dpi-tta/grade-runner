@@ -20,7 +20,7 @@ namespace :grade do
     config_dir_name = find_or_create_directory(".vscode")
     config_file_name = "#{config_dir_name}/.ltici_apitoken.yml"
     student_config = {}
-    student_config["submission_url"] = "https://grades.firstdraft.com"
+    student_config["submission_url"] = "https://f5cd-98-227-60-153.ngrok-free.app"
     student_config["github_username"] = retrieve_github_username
 
     if File.exist?(config_file_name)
@@ -33,7 +33,7 @@ namespace :grade do
       file_token = config["personal_access_token"]
       student_config["submission_url"] = config["submission_url"]
     else
-      submission_url = "https://grades.firstdraft.com"
+      submission_url = "https://f5cd-98-227-60-153.ngrok-free.app"
     end
     if file_token.nil? && ENV.has_key?("LTICI_GITPOD_APITOKEN")
       input_token = ENV.fetch("LTICI_GITPOD_APITOKEN")
@@ -63,14 +63,14 @@ namespace :grade do
         end
       end
     end
-    
-    if token.present? 
+
+    if token.present?
 
       if is_valid_token?(submission_url, token) == false
         student_config["personal_access_token"] = nil
         update_config_file(config_file_name, student_config)
         puts "Your access token looked invalid, so we've reset it to be blank. Please re-run rails grade and, when asked, copy-paste your token carefully from the assignment page."
-      else 
+      else
         if GradeRunner.override_local_specs
           resource_info = upstream_repo(submission_url, token)
           full_reponame = resource_info.fetch("repo_slug")
@@ -111,7 +111,7 @@ namespace :grade do
   task :reset_token do
     config_dir_name = find_or_create_directory(".vscode")
     config_file_name = "#{config_dir_name}/.ltici_apitoken.yml"
-    submission_url = "https://grades.firstdraft.com"
+    submission_url = "https://f5cd-98-227-60-153.ngrok-free.app"
 
     student_config = {}
     student_config["submission_url"] = submission_url
