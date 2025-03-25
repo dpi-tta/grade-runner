@@ -77,7 +77,8 @@ namespace :grade do
           remote_spec_folder_sha = resource_info.fetch("spec_folder_sha")
           source_code_url = resource_info.fetch("source_code_url")
           set_upstream_remote(full_reponame)
-          sync_specs_with_source(full_reponame, remote_spec_folder_sha, source_code_url)
+          # TODO: verify specs match source code
+          # sync_specs_with_source(full_reponame, remote_spec_folder_sha, source_code_url)
         end
 
         path = File.join(project_root, "/tmp/output/#{Time.now.to_i}.json")
@@ -95,17 +96,17 @@ namespace :grade do
     end
   end
 
-  desc "Run only the next failing test."
-  task :next do
-    path = File.join(project_root, "examples.txt")
-    if File.exist?(path)
-      `bin/rails db:migrate RAILS_ENV=test` if defined?(Rails)
-      puts `RAILS_ENV=test bundle exec rspec --next-failure --format HintFormatter`
-    else
-      puts `RAILS_ENV=test bundle exec rspec`
-      puts "Please rerun rails grade:next to run the first failing spec"
-    end
-  end
+  # desc "Run only the next failing test."
+  # task :next do
+  #   path = File.join(project_root, "examples.txt")
+  #   if File.exist?(path)
+  #     `bin/rails db:migrate RAILS_ENV=test` if defined?(Rails)
+  #     puts `RAILS_ENV=test bundle exec rspec --next-failure --format HintFormatter`
+  #   else
+  #     puts `RAILS_ENV=test bundle exec rspec`
+  #     puts "Please rerun rails grade:next to run the first failing spec"
+  #   end
+  # end
 
   desc "Reset access token saved in YAML file."
   task :reset_token do
@@ -139,64 +140,64 @@ namespace :grade do
 
 end
 
-def sync_specs_with_source(full_reponame, remote_sha, repo_url)
-  # Unstage staged changes in spec folder
-  `git restore --staged spec/* `
-  # Discard unstaged changes in spec folder
-  `git checkout spec -q`
-  `git clean spec -f -q`
-  local_sha = `git ls-tree HEAD #{project_root.join('spec')}`.chomp.split[2]
+# def sync_specs_with_source(full_reponame, remote_sha, repo_url)
+#   # Unstage staged changes in spec folder
+#   `git restore --staged spec/* `
+#   # Discard unstaged changes in spec folder
+#   `git checkout spec -q`
+#   `git clean spec -f -q`
+#   local_sha = `git ls-tree HEAD #{project_root.join('spec')}`.chomp.split[2]
 
-  unless remote_sha == local_sha
-    find_or_create_directory("tmp")
-    find_or_create_directory("tmp/backup")
-    files_and_subfolders_inside_specs = Dir.glob("spec/*")
-    # Temporarily move specs
-    FileUtils.mv(files_and_subfolders_inside_specs, "tmp/backup")
+#   unless remote_sha == local_sha
+#     find_or_create_directory("tmp")
+#     find_or_create_directory("tmp/backup")
+#     files_and_subfolders_inside_specs = Dir.glob("spec/*")
+#     # Temporarily move specs
+#     FileUtils.mv(files_and_subfolders_inside_specs, "tmp/backup")
 
-    download_file(repo_url, "tmp/spec.zip")
-    extracted_zip_folder = extract_zip("tmp/spec.zip", "tmp")
-    source_directory = extracted_zip_folder.join("spec")
-    overwrite_spec_folder(source_directory)
+#     download_file(repo_url, "tmp/spec.zip")
+#     extracted_zip_folder = extract_zip("tmp/spec.zip", "tmp")
+#     source_directory = extracted_zip_folder.join("spec")
+#     overwrite_spec_folder(source_directory)
 
-    FileUtils.rm(project_root.join("tmp/spec.zip"))
-    FileUtils.rm_rf(extracted_zip_folder)
-    FileUtils.rm_rf("tmp/backup")
-    `git add spec/`
-    `git commit spec/ -m "Update spec/ folder to latest version" --author "First Draft <grades@firstdraft.com>"`
-  end
-end
+#     FileUtils.rm(project_root.join("tmp/spec.zip"))
+#     FileUtils.rm_rf(extracted_zip_folder)
+#     FileUtils.rm_rf("tmp/backup")
+#     `git add spec/`
+#     `git commit spec/ -m "Update spec/ folder to latest version" --author "First Draft <grades@firstdraft.com>"`
+#   end
+# end
 
-def download_file(url, destination)
-  download = URI.open(url)
-  IO.copy_stream(download, destination)
-end
+# def download_file(url, destination)
+#   download = URI.open(url)
+#   IO.copy_stream(download, destination)
+# end
 
-def extract_zip(folder, destination)
-  extracted_file_path = project_root.join(destination)
-  Zip::File.open(folder) do |zip_file|
-    zip_file.each_with_index do |file, index|
-      # Get name of root folder in zip file
-      if index == 0
-        extracted_file_path = extracted_file_path.join(file.name)
-      end
-      file_path = File.join(destination, file.name)
-      FileUtils.mkdir_p(File.dirname(file_path))
-      file.extract(file_path)
-    end
-  end
-  extracted_file_path
-end
+# def extract_zip(folder, destination)
+#   extracted_file_path = project_root.join(destination)
+#   Zip::File.open(folder) do |zip_file|
+#     zip_file.each_with_index do |file, index|
+#       # Get name of root folder in zip file
+#       if index == 0
+#         extracted_file_path = extracted_file_path.join(file.name)
+#       end
+#       file_path = File.join(destination, file.name)
+#       FileUtils.mkdir_p(File.dirname(file_path))
+#       file.extract(file_path)
+#     end
+#   end
+#   extracted_file_path
+# end
 
-def overwrite_spec_folder(source_directory)
-  destination_directory = "spec"
-  # Get all files in the source directory
-  files = Dir.glob("#{source_directory}/*")
-  # Move each file to the destination directory
-  files.each do |file|
-    FileUtils.mv(file, destination_directory)
-  end
-end
+# def overwrite_spec_folder(source_directory)
+#   destination_directory = "spec"
+#   # Get all files in the source directory
+#   files = Dir.glob("#{source_directory}/*")
+#   # Move each file to the destination directory
+#   files.each do |file|
+#     FileUtils.mv(file, destination_directory)
+#   end
+# end
 
 def set_upstream_remote(repo_slug)
   upstream = `git remote -v | grep -w upstream`.chomp
@@ -218,9 +219,7 @@ def find_or_create_directory(directory_name)
 end
 
 def is_valid_token?(root_url, token)
-  return false unless token.is_a?(String)
-    # TODO: add custom token creation
-    # && token =~ /^[1-9A-Za-z][^OIl]{23}$/
+  return false unless token.is_a?(String) && token =~ /^[1-9A-Za-z][^OIl]{23}$/
   url = "#{root_url}/submissions/validate_token?token=#{token}"
   uri = URI.parse(url)
   req = Net::HTTP::Get.new(uri, 'Content-Type' => 'application/json')
