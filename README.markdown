@@ -1,6 +1,6 @@
 # grade_runner
 
-A Ruby client for [Grades](https://f5cd-98-227-60-153.ngrok-free.app)
+A Ruby client for [Grades](https://grades.firstdraft.com)
 
 
 ## Installation
@@ -48,6 +48,7 @@ if Rails.env.development? || Rails.env.test?
   GradeRunner.config do |config|
     config.default_points = 1           # default 1
     config.override_local_specs = false # default true
+    config.submission_url = "https://your-grading-server-url.com" # Set custom submission URL
   end
 end
 ```
@@ -90,6 +91,12 @@ This is usually done by making a runnable file[^1], typically called `bin/rails`
 require "rubygems"
 require "bundler/setup"
 require "rake"
+
+# Configure grade_runner (optional)
+require "grade_runner"
+GradeRunner.config do |config|
+  config.submission_url = "https://your-grading-server-url.com" # Set custom submission URL
+end
 
 dir = Gem::Specification.find_by_name("grade_runner").gem_dir
 

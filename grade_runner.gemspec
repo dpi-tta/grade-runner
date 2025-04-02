@@ -38,7 +38,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/firstdraft/grade_runner".freeze
   s.licenses = ["MIT".freeze]
   s.rubygems_version = "3.1.6".freeze
-  s.summary = "A Ruby client for [firstdraft Grades](https://f5cd-98-227-60-153.ngrok-free.app)".freeze
+  s.summary = "A Ruby client for [firstdraft Grades](https://grades.firstdraft.com)".freeze
 
   if s.respond_to? :specification_version then
     s.specification_version = 4
