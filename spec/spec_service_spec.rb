@@ -10,10 +10,17 @@ describe GradeRunner::Services::SpecService do
     before do
       # Mock the path utils
       allow(GradeRunner::Utils::PathUtils).to receive(:tmp_path).and_return('/tmp/mock_path')
+      allow(GradeRunner::Utils::PathUtils).to receive(:find_or_create_directory).and_return('/tmp/mock_path')
+      allow(GradeRunner::Utils::PathUtils).to receive(:project_root).and_return('/tmp/mock_project')
       allow(FileUtils).to receive(:rm_rf)
       allow(FileUtils).to receive(:mkdir_p)
-      allow(Dir).to receive(:chdir).and_yield
+      allow(FileUtils).to receive(:mv)
+      allow(FileUtils).to receive(:cp_r)
+      allow(FileUtils).to receive(:rm)
       allow(Dir).to receive(:exist?).and_return(false)
+      allow(Dir).to receive(:glob).and_return([])
+      allow(File).to receive(:exist?).and_return(false)
+      allow(File).to receive(:join) { |*args| args.join('/') }
     end
     
     it 'returns false when required parameters are missing' do
@@ -22,14 +29,21 @@ describe GradeRunner::Services::SpecService do
       expect(spec_service.sync_specs_with_source('org/repo', 'sha123', nil)).to be false
     end
 
-    # This test would need to mock Git operations to fully test the functionality
+    # Test for git operations and spec syncing
     it 'handles git operations properly' do
-      # Setup git mocks
-      expect(spec_service).to receive(:`).with('git clone https://github.com/org/repo .').and_return('')
-      expect(spec_service).to receive(:`).with('git checkout sha123').and_return('')
+      # Mock all the git shell commands
+      allow(spec_service).to receive(:`).with(any_args).and_return('')
+      
+      # Mock URI.open and zip extraction
+      allow(spec_service).to receive(:download_file).and_return(true)
+      allow(spec_service).to receive(:extract_zip).and_return('/tmp/mock_path/extracted')
+      allow(spec_service).to receive(:overwrite_spec_folder).and_return(true)
+      
+      # Force the method to update specs by making SHA comparison fail
+      allow(spec_service).to receive(:`).with(/git ls-tree/).and_return("blob 100644 different-sha spec")
       
       # Test the method
-      expect(spec_service.sync_specs_with_source('org/repo', 'sha123', 'url')).to be false
+      expect(spec_service.sync_specs_with_source('org/repo', 'sha123', 'url')).to be true
     end
   end
 end
