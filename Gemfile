@@ -11,7 +11,7 @@ group :development do
   gem "rspec", "~> 3.5.0"
   gem "rdoc", "~> 6.1"
   gem "bundler", "~> 2.6.7"
-  gem "juwelier", "~> 2.1.0"
+  gem "juwelier", "~> 2.4.9"
   gem "simplecov", ">= 0"
   gem "pry", "~> 0"
   gem "pry-byebug", "~> 3"
