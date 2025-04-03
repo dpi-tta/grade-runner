@@ -1,9 +1,5 @@
 source "https://rubygems.org"
 
-# TODO: will this break projects on different ruby versions? can we set a range?
-# Note: grade_runner does not support 3.4 (BigDecimal)
-ruby "3.2.1"
-
 gem "activesupport", ">= 2.3.5"
 gem "oj", "~> 3.13.12"
 gem "octokit", "~> 5.0"
