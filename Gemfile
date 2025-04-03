@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
-# TODO: will this break projects? can we set a range?
-# 3.4 does not work at the moment
+# TODO: will this break projects on different ruby versions? can we set a range?
+# Note: grade_runner does not support 3.4 (BigDecimal)
 ruby "3.2.1"
 
 gem "activesupport", ">= 2.3.5"
