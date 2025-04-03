@@ -36,6 +36,12 @@ module GradeRunner
           output_dir = find_or_create_directory("tmp/output")
           File.join(output_dir, "#{Time.now.to_i}.json")
         end
+
+        # Get the temporary directory path
+        # @return [String] Path to the temporary directory
+        def tmp_path
+          find_or_create_directory("tmp")
+        end
       end
     end
   end

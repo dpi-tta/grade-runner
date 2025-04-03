@@ -1,4 +1,5 @@
 require "oj"
+require "fileutils"
 require "grade_runner/utils/path_utils"
 
 module GradeRunner
@@ -20,9 +21,36 @@ module GradeRunner
       end
 
       def sync_specs_with_source(full_reponame, remote_sha, repo_url)
-        # Implement spec synchronization logic here
-        # Currently commented out in the original
-        # This is a placeholder for future implementation
+        # Return if required parameters are missing
+        return false unless full_reponame && remote_sha && repo_url
+    
+        # Create a temporary directory for clone
+        temp_dir = "#{@path_utils.tmp_path}/upstream_repo"
+        FileUtils.rm_rf(temp_dir) if Dir.exist?(temp_dir)
+        FileUtils.mkdir_p(temp_dir)
+    
+        Dir.chdir(temp_dir) do
+          # Clone the upstream repository
+          `git clone https://github.com/#{full_reponame} .`
+      
+          # Checkout the specific SHA if provided
+          `git checkout #{remote_sha}` if remote_sha.present?
+      
+          # Copy spec directory if it exists
+          if Dir.exist?("spec")
+            # Remove existing specs in project
+            FileUtils.rm_rf("#{@path_utils.project_root}/spec")
+        
+            # Copy specs from upstream to project
+            FileUtils.cp_r("spec", "#{@path_utils.project_root}/")
+            return true
+          end
+        end
+    
+        false
+      ensure
+        # Clean up temporary directory
+        FileUtils.rm_rf(temp_dir) if Dir.exist?(temp_dir)
       end
 
       def prepare_output_directory
