@@ -152,7 +152,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (>= 2.3.5)
-  bundler (~> 2.1.4)
+  bundler (~> 2.6.7)
   faraday-retry (~> 1.0.3)
   juwelier (~> 2.1.0)
   octokit (~> 5.0)
@@ -170,4 +170,4 @@ DEPENDENCIES
   zip
 
 BUNDLED WITH
-   2.1.4
+   2.6.7
