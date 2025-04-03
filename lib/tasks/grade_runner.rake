@@ -10,7 +10,7 @@ namespace :grade_runner do
     reponame = ENV["CIRCLE_PROJECT_REPONAME"]
     sha = ENV["CIRCLE_SHA1"]
     token = ENV['GRADES_PERSONAL_ACCESS_TOKEN']
-    
+
     if token.present?
       # If in CI environment, use Runner directly with CI parameters
       submission_url = GradeRunner.submission_url

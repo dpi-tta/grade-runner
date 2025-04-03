@@ -16,14 +16,14 @@ module GradeRunner
 
         github_email = `git config user.email`.chomp
         return "" if github_email.blank?
-        
+
         username = `git config user.name`.chomp
         search_results = Octokit.search_users("#{github_email} in:email").fetch(:items)
-        
+
         if search_results.present?
           username = search_results.first.fetch(:login, username)
         end
-        
+
         username
       end
 
