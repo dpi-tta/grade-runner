@@ -7,13 +7,16 @@ module GradeRunner
     class TokenService
       attr_reader :submission_url
 
+      # TODO: do we want to make this configurable?
+      TOKEN_REGEX = /^[1-9A-Za-z][^OIl]{23}$/
+
       def initialize(submission_url)
         @submission_url = submission_url
       end
 
       def validate_token(token)
-        return false unless token.is_a?(String) && token =~ /^[1-9A-Za-z][^OIl]{23}$/
-        
+        return false unless token.is_a?(String) && token =~ TOKEN_REGEX
+
         url = "#{submission_url}/submissions/validate_token?token=#{token}"
         uri = URI.parse(url)
         req = Net::HTTP::Get.new(uri, 'Content-Type' => 'application/json')
@@ -43,19 +46,19 @@ module GradeRunner
         while new_token.empty? do
           print "> "
           new_token = $stdin.gets.chomp.strip
-          
+
           if new_token.empty? || !validate_token(new_token)
             puts "Please enter valid token"
             new_token = ""
           end
         end
-        
+
         new_token
       end
 
       def fetch_upstream_repo(token)
-        return false unless token.is_a?(String) && token =~ /^[1-9A-Za-z][^OIl]{23}$/
-        
+        return false unless token.is_a?(String) && token =~ TOKEN_REGEX
+
         url = "#{submission_url}/submissions/resource?token=#{token}"
         uri = URI.parse(url)
         req = Net::HTTP::Get.new(uri, 'Content-Type' => 'application/json')
