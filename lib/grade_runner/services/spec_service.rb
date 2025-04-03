@@ -1,6 +1,7 @@
 require "oj"
 require "fileutils"
 require "grade_runner/utils/path_utils"
+require "active_support/core_ext/object/blank"
 
 module GradeRunner
   module Services
@@ -25,8 +26,8 @@ module GradeRunner
         return false unless full_reponame && remote_sha && repo_url
     
         # Create a temporary directory for clone
-        temp_dir = "#{@path_utils.tmp_path}/upstream_repo"
-        FileUtils.rm_rf(temp_dir) if Dir.exist?(temp_dir)
+        temp_dir = File.join(@path_utils.tmp_path, "upstream_repo")
+        FileUtils.rm_rf(temp_dir) if temp_dir && Dir.exist?(temp_dir)
         FileUtils.mkdir_p(temp_dir)
     
         Dir.chdir(temp_dir) do
@@ -50,7 +51,7 @@ module GradeRunner
         false
       ensure
         # Clean up temporary directory
-        FileUtils.rm_rf(temp_dir) if Dir.exist?(temp_dir)
+        FileUtils.rm_rf(temp_dir) if temp_dir && Dir.exist?(temp_dir)
       end
 
       def prepare_output_directory

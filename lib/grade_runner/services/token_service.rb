@@ -1,5 +1,6 @@
 require "net/http"
 require "oj"
+require "active_support/core_ext/object/blank"
 
 module GradeRunner
   module Services
