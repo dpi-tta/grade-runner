@@ -1,7 +1,5 @@
 require "active_support/core_ext/object/blank"
-require "grade_runner/runner"
 require "grade_runner/services/grade_service"
-require "grade_runner/utils/path_utils"
 
 desc "Alias for \"grade:all\"."
 task grade: "grade:all" do
