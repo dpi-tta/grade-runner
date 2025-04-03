@@ -92,12 +92,6 @@ require "rubygems"
 require "bundler/setup"
 require "rake"
 
-# Configure grade_runner (optional)
-require "grade_runner"
-GradeRunner.config do |config|
-  config.submission_url = "https://your-grading-server-url.com" # Set custom submission URL
-end
-
 dir = Gem::Specification.find_by_name("grade_runner").gem_dir
 
 load "#{dir}/lib/tasks/grade.rake"
