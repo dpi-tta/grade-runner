@@ -1,6 +1,6 @@
 # grade_runner
 
-A Ruby client for [Grades](https://grades.firstdraft.com)
+A Ruby client for [Grades](https://grades.dpi.dev)
 
 
 ## Installation
