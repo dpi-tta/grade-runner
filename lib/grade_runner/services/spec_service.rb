@@ -17,7 +17,9 @@ module GradeRunner
         `bin/rails db:migrate RAILS_ENV=test` if defined?(Rails)
 
         # Run tests with JSON formatter
-        `RAILS_ENV=test bundle exec rspec --format JsonOutputFormatter --out #{output_path}`
+        # Run RSpec via its Ruby API so you stay in the same process
+        # This helps with using JsonOutputFormatter
+        RSpec::Core::Runner.run(["--format", "JsonOutputFormatter", "--out", output_path])
 
         # Load and return test results
         Oj.load(File.read(output_path))

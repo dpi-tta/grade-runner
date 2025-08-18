@@ -2,7 +2,6 @@
 
 A Ruby client for [Grades](https://grades.dpi.dev)
 
-
 ## Installation
 
 Add this line to your application's Gemfile:

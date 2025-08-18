@@ -1,5 +1,7 @@
 require "grade_runner/services/grade_service"
 require "grade_runner/utils/path_utils"
+require "grade_runner/formatters/json_output_formatter"
+require "grade_runner/formatters/hint_formatter"
 
 namespace :grade_runner do
   desc "Grade project"

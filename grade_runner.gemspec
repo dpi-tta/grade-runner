@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Raghu Betina".freeze, "Jelani Woods".freeze]
-  s.date = "2025-04-03"
+  s.date = "2025-08-18"
   s.description = "This gem runs your RSpec test suite and posts the JSON output to grades.firstdraft.com.".freeze
   s.email = ["raghu@firstdraft.com".freeze, "jelani@firstdraft.com".freeze]
   s.extra_rdoc_files = [
@@ -38,23 +38,22 @@ Gem::Specification.new do |s|
     "lib/grade_runner/services/grade_service.rb",
     "lib/grade_runner/services/spec_service.rb",
     "lib/grade_runner/services/token_service.rb",
+    "lib/grade_runner/tasks.rb",
+    "lib/grade_runner/tasks/grade.rake",
+    "lib/grade_runner/tasks/grade_runner.rake",
     "lib/grade_runner/utils/path_utils.rb",
-    "lib/tasks/grade.rake",
-    "lib/tasks/grade_runner.rake",
-    "spec/grade_service_spec.rb",
-    "spec/spec_helper.rb",
-    "spec/spec_service_spec.rb"
+    "spec/spec_helper.rb"
   ]
   s.homepage = "http://github.com/firstdraft/grade_runner".freeze
   s.licenses = ["MIT".freeze]
-  s.required_ruby_version = Gem::Requirement.new([">= 2".freeze])
+  s.required_ruby_version = Gem::Requirement.new(">= 2".freeze)
   s.rubygems_version = "3.4.6".freeze
   s.summary = "A Ruby client for [firstdraft Grades](https://grades.firstdraft.com)".freeze
 
   s.specification_version = 4
 
   s.add_runtime_dependency(%q<activesupport>.freeze, [">= 2.3.5"])
-  s.add_runtime_dependency(%q<oj>.freeze, ["~> 3.16"])
+  s.add_runtime_dependency(%q<oj>.freeze, ["~> 3.16", ">= 3.16.3"])
   s.add_runtime_dependency(%q<octokit>.freeze, ["~> 5.0"])
   s.add_runtime_dependency(%q<zip>.freeze, [">= 0"])
   s.add_runtime_dependency(%q<faraday-retry>.freeze, ["~> 1.0.3"])
@@ -71,3 +70,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency(%q<pry-rescue>.freeze, ["~> 1"])
   s.add_development_dependency(%q<pry-stack_explorer>.freeze, ["~> 0"])
 end
+

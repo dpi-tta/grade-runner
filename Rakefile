@@ -22,7 +22,7 @@ Juwelier::Tasks.new do |gem|
   gem.authors = ["Raghu Betina", "Jelani Woods"]
 
   # Note: rspec tests do not yet support 3.4 (BigDecimal)
-  gem.required_ruby_version = Gem::Requirement.new(">= 2", "< 3.4")
+  gem.required_ruby_version = Gem::Requirement.new(">= 2")
 
   # dependencies defined in Gemfile
 end
