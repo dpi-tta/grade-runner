@@ -47,14 +47,14 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/firstdraft/grade_runner".freeze
   s.licenses = ["MIT".freeze]
-  s.required_ruby_version = Gem::Requirement.new([">= 2".freeze, "< 3.4".freeze])
+  s.required_ruby_version = Gem::Requirement.new([">= 2".freeze])
   s.rubygems_version = "3.4.6".freeze
   s.summary = "A Ruby client for [firstdraft Grades](https://grades.firstdraft.com)".freeze
 
   s.specification_version = 4
 
   s.add_runtime_dependency(%q<activesupport>.freeze, [">= 2.3.5"])
-  s.add_runtime_dependency(%q<oj>.freeze, ["~> 3.13.12"])
+  s.add_runtime_dependency(%q<oj>.freeze, ["~> 3.16"])
   s.add_runtime_dependency(%q<octokit>.freeze, ["~> 5.0"])
   s.add_runtime_dependency(%q<zip>.freeze, [">= 0"])
   s.add_runtime_dependency(%q<faraday-retry>.freeze, ["~> 1.0.3"])
@@ -71,4 +71,3 @@ Gem::Specification.new do |s|
   s.add_development_dependency(%q<pry-rescue>.freeze, ["~> 1"])
   s.add_development_dependency(%q<pry-stack_explorer>.freeze, ["~> 0"])
 end
-
