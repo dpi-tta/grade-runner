@@ -16,10 +16,21 @@ module GradeRunner
         # Ensure database is migrated if Rails app
         `bin/rails db:migrate RAILS_ENV=test` if defined?(Rails)
 
-        # Run tests with JSON formatter
+        # Run tests with JSON formatter and explicitly set path to specs
+        project_root = Dir.pwd
+        spec_dir     = File.join(project_root, "spec")
+        args = [
+          "--default-path", spec_dir,
+          "--pattern", "**/*_spec.rb",
+          "--format", "JsonOutputFormatter",
+          "--out", output_path, # "tmp/output/results.json"
+          spec_dir
+        ]
+
         # Run RSpec via its Ruby API so you stay in the same process
         # This helps with using JsonOutputFormatter
-        RSpec::Core::Runner.run(["--format", "JsonOutputFormatter", "--out", output_path])
+        # TODO: handle non-zero exit code
+        RSpec::Core::Runner.run(args)
 
         # Load and return test results
         Oj.load(File.read(output_path))
