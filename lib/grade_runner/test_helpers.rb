@@ -25,8 +25,7 @@ module GradeRunner
 
     ##
     # Run a Ruby script in-process (like `ruby file.rb`) while capturing
-    # its stdout, stderr, and exitstatus. This is similar to
-    # Open3.capture3 but plays nicely with RSpec mocks.
+    # its stdout, stderr, and exitstatus.
     #
     # @param path [String] path to the script (e.g., "./calculator.rb")
     # @param stdin [String] content fed into gets/$stdin (include "\n")
@@ -68,7 +67,6 @@ module GradeRunner
 
       [out_buf.string, err_buf.string, status]
     end
-    alias capture3_ruby run_script
 
     ##
     # Run a script and return normalized pp/puts lines:
@@ -108,7 +106,6 @@ module GradeRunner
     def run_file(path)
       capture_stdout { load path }
     end
-    alias run_script run_file
 
     ##
     # Capture standard output (and optionally stderr) while running a block.
