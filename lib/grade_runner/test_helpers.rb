@@ -118,5 +118,40 @@ module GradeRunner
       end
       normalize_output(run_script(file_path))
     end
+
+    ##
+    # Temporarily replace $stdin with a StringIO seeded with given input.
+    #
+    # @param input [String] text that will be returned by gets/lines/etc.
+    # @yield block that will run with $stdin replaced
+    # @return [Object] block return value
+    #
+    # @example
+    #   with_stdin("7\n3\n") do
+    #     x = gets.to_i  # => 7
+    #     y = gets.to_i  # => 3
+    #   end
+    #
+    def with_stdin(input)
+      original_stdin = $stdin
+      $stdin = StringIO.new(input)
+      yield
+    ensure
+      $stdin = original_stdin
+    end
+
+    ##
+    # Run a Ruby script with provided stdin content, capturing its stdout.
+    #
+    # @param path [String] path to the script (e.g., "./calculator.rb")
+    # @param input [String] text passed to $stdin
+    # @return [String] captured stdout
+    #
+    # @example
+    #   output = run_script_with_input("./calculator.rb", "7\n3\n")
+    #
+    def run_script_with_input(path, input)
+      with_stdin(input) { run_script(path) }
+    end
   end
 end
