@@ -4,9 +4,8 @@ require "stringio"
 module GradeRunner
   ##
   # TestHelpers provides small utilities for writing exercise specs
-  # that need to capture program output or temporarily modify the
-  # runtime environment. These helpers are designed to make specs
-  # shorter, clearer, and more consistent across projects.
+  # that need to capture program output. These helpers keep specs
+  # short, readable, and consistent across projects.
   #
   # Example usage (RSpec):
   #
@@ -15,8 +14,8 @@ module GradeRunner
   #   end
   #
   #   it "captures script output" do
-  #     output = capture_output_of("./hello.rb")
-  #     expect(output).to eq("\"hello, world\"\n")
+  #     lines = pp_lines_from("./hello.rb")
+  #     expect(lines).to eq(["hello, world"])
   #   end
   #
   module TestHelpers
@@ -30,15 +29,7 @@ module GradeRunner
     # @return [Array<String,String>] [STDOUT, STDERR] if capture_stderr: true
     #
     # @example
-    #   output = capture_stdout { puts "hi" }
-    #   # => "hi\n"
-    #
-    #   out, err = capture_stdout(capture_stderr: true) do
-    #     puts "ok"
-    #     warn "oops"
-    #   end
-    #   # out = "ok\n"
-    #   # err = "oops\n"
+    #   output = capture_stdout { puts "hi" }  # => "hi\n"
     #
     def capture_stdout(capture_stderr: false)
       orig_out, orig_err = $stdout, $stderr
@@ -57,20 +48,7 @@ module GradeRunner
     end
 
     ##
-    # Convenience alias for capture_stdout with capture_stderr: true.
-    #
-    # @yield block of code to execute
-    # @return [Array<String,String>] [STDOUT, STDERR]
-    #
-    # @example
-    #   out, err = capture_io { puts "ok"; warn "oops" }
-    #
-    def capture_io(&block)
-      capture_stdout(capture_stderr: true, &block)
-    end
-
-    ##
-    # Load a Ruby file (like "ruby file.rb") and capture its output.
+    # Load a Ruby file (like `ruby file.rb`) and capture its output.
     #
     # This is especially useful for testing beginner exercises
     # where the code lives in a standalone script and prints with pp/puts.
@@ -88,46 +66,57 @@ module GradeRunner
     end
 
     ##
-    # Temporarily set environment variables within a block.
+    # Shorthand to run a script in the current process and return its STDOUT.
     #
-    # Original values are restored afterward, even if the block raises.
-    #
-    # @param hash [Hash{String,Symbol=>String,nil}] ENV vars to override
-    # @yield block to run with modified ENV
+    # @param path [String] the script path (e.g., "./script.rb")
+    # @return [String] captured stdout
     #
     # @example
-    #   with_env("LUCKY" => "14") do
-    #     output = capture_output_of("./lucky_number.rb")
-    #     expect(output).to include("14")
-    #   end
+    #   out = run_script("./hello.rb")
     #
-    def with_env(hash)
-      old = {}
-      hash.each { |k, v| old[k] = ENV[k]; ENV[k] = v }
-      yield
-    ensure
-      old.each { |k, v| ENV[k] = v }
+    def run_script(path)
+      capture_output_of(path)
     end
 
     ##
-    # Temporarily change the current working directory for a block.
+    # Normalize output produced via pp/puts by:
+    # - removing double quotes (pp wraps strings in quotes),
+    # - splitting into lines,
+    # - trimming whitespace,
+    # - removing empty lines.
     #
-    # Useful when testing scripts that assume a particular relative path.
-    #
-    # @param dir [String] directory to change into
-    # @yield block to run inside the directory
+    # @param output [String]
+    # @return [Array<String>] cleaned lines
     #
     # @example
-    #   with_chdir("examples") do
-    #     output = capture_output_of("./script.rb")
-    #   end
+    #   lines = normalize_output(%("14"\n"lucky"\n))  # => ["14", "lucky"]
     #
-    def with_chdir(dir)
-      old = Dir.pwd
-      Dir.chdir(dir)
-      yield
-    ensure
-      Dir.chdir(old)
+    def normalize_output(output)
+      output.gsub('"', '').lines.map(&:strip).reject(&:empty?)
+    end
+
+    ##
+    # Convenience for specs where scripts print with `pp`:
+    # Runs the file and returns normalized lines (see #normalize_output).
+    #
+    # If rand_value is provided, stubs bare `rand(...)` calls by
+    # intercepting Kernel#rand as invoked on Object instances
+    # (i.e., `rand(1..100)` with no explicit receiver).
+    #
+    # @param file_path [String]
+    # @param rand_value [Integer, nil] optional stub value for rand
+    # @return [Array<String>] normalized lines
+    #
+    # @example
+    #   lines = pp_lines_from("./lucky_number.rb", rand_value: 14)
+    #   expect(lines).to eq(%w[14 lucky])
+    #
+    def pp_lines_from(file_path, rand_value: nil)
+      if rand_value
+        # Requires RSpec mocks (this module is intended to be included in RSpec)
+        allow_any_instance_of(Object).to receive(:rand).and_return(rand_value)
+      end
+      normalize_output(run_script(file_path))
     end
   end
 end
