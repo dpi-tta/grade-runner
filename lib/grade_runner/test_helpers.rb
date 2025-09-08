@@ -14,22 +14,108 @@ module GradeRunner
   #   end
   #
   #   it "captures script output" do
-  #     lines = pp_lines_from("./hello.rb")
+  #     lines = pp_lines_from_run("./hello.rb")
   #     expect(lines).to eq(["hello, world"])
   #   end
   #
   module TestHelpers
+    Status = Struct.new(:exitstatus) do
+      def success? = exitstatus.to_i == 0
+    end
+
     ##
-    # Capture standard output (and optionally standard error) while
-    # executing a block.
+    # Run a Ruby script in-process (like `ruby file.rb`) while capturing
+    # its stdout, stderr, and exitstatus. This is similar to
+    # Open3.capture3 but plays nicely with RSpec mocks.
     #
-    # @param capture_stderr [Boolean] whether to also capture $stderr
-    # @yield block of code to execute
-    # @return [String] captured STDOUT if capture_stderr: false
-    # @return [Array<String,String>] [STDOUT, STDERR] if capture_stderr: true
+    # @param path [String] path to the script (e.g., "./calculator.rb")
+    # @param stdin [String] content fed into gets/$stdin (include "\n")
+    # @param argv [Array<String>] values to replace ARGV with
+    # @return [Array(String, String, Status)] [stdout, stderr, status]
     #
     # @example
-    #   output = capture_stdout { puts "hi" }  # => "hi\n"
+    #   out, err, status = run_script("./hello.rb", stdin: "7\n3\n")
+    #
+    def run_script(path, stdin: "", argv: [])
+      orig_stdin, orig_stdout, orig_stderr = $stdin, $stdout, $stderr
+      orig_argv = ARGV.dup
+
+      in_buf  = StringIO.new(String(stdin))
+      out_buf = StringIO.new
+      err_buf = StringIO.new
+
+      $stdin  = in_buf
+      $stdout = out_buf
+      $stderr = err_buf
+      ARGV.replace(Array(argv))
+
+      status = Status.new(0)
+
+      begin
+        load path
+      rescue SystemExit => e
+        status.exitstatus = e.status || 1
+      rescue Exception => e
+        err_buf.puts("#{e.class}: #{e.message}")
+        e.backtrace&.each { |ln| err_buf.puts(ln) }
+        status.exitstatus = 1
+      ensure
+        $stdin  = orig_stdin
+        $stdout = orig_stdout
+        $stderr = orig_stderr
+        ARGV.replace(orig_argv)
+      end
+
+      [out_buf.string, err_buf.string, status]
+    end
+    alias capture3_ruby run_script
+
+    ##
+    # Run a script and return normalized pp/puts lines:
+    #   - strips quotes (pp wraps strings in quotes)
+    #   - trims whitespace
+    #   - drops empty lines
+    #
+    # @param path [String]
+    # @param stdin [String]
+    # @return [Array<String>]
+    #
+    # @example
+    #   lines = pp_lines_from_run("./lucky_number.rb", stdin: "14\n")
+    #   expect(lines).to eq(%w[14 lucky])
+    #
+    def pp_lines_from_run(path, stdin: "")
+      stdout, _stderr, _status = run_script(path, stdin: stdin)
+      normalize_output(stdout)
+    end
+    alias pp_lines_from_capture3 pp_lines_from_run
+
+    ##
+    # Remove quotes, split into lines, strip, and reject empties.
+    #
+    # @param output [String]
+    # @return [Array<String>]
+    def normalize_output(output)
+      output.gsub('"', "").lines.map(&:strip).reject(&:empty?)
+    end
+
+    ##
+    # Run a Ruby file and capture its stdout.
+    #
+    # @param path [String]
+    # @return [String]
+    #
+    def run_file(path)
+      capture_stdout { load path }
+    end
+    alias run_script run_file
+
+    ##
+    # Capture standard output (and optionally stderr) while running a block.
+    #
+    # @param capture_stderr [Boolean]
+    # @yield block to run
+    # @return [String] stdout, or [stdout, stderr] if capture_stderr
     #
     def capture_stdout(capture_stderr: false)
       orig_out, orig_err = $stdout, $stderr
@@ -48,133 +134,17 @@ module GradeRunner
     end
 
     ##
-    # Load a Ruby file (like `ruby file.rb`) and capture its output.
+    # Remove comment-only lines from source.
     #
-    # This is especially useful for testing beginner exercises
-    # where the code lives in a standalone script and prints with pp/puts.
-    #
-    # @param file_path [String] path to the file to load
-    # @param capture_stderr [Boolean] whether to also capture $stderr
-    # @return [String, Array<String,String>] captured output
+    # @param src [String]
+    # @return [String] source without comments
     #
     # @example
-    #   output = capture_output_of("./hello.rb")
-    #   expect(output).to eq("\"hello, world\"\n")
+    #   clean = source_without_comments(File.read("calculator.rb"))
     #
-    def capture_output_of(file_path, capture_stderr: false)
-      capture_stdout(capture_stderr: capture_stderr) { load file_path }
-    end
-
-    ##
-    # Shorthand to run a script in the current process and return its STDOUT.
-    #
-    # @param path [String] the script path (e.g., "./script.rb")
-    # @return [String] captured stdout
-    #
-    # @example
-    #   out = run_script("./hello.rb")
-    #
-    def run_script(path)
-      capture_output_of(path)
-    end
-
-    ##
-    # Normalize output produced via pp/puts by:
-    # - removing double quotes (pp wraps strings in quotes),
-    # - splitting into lines,
-    # - trimming whitespace,
-    # - removing empty lines.
-    #
-    # @param output [String]
-    # @return [Array<String>] cleaned lines
-    #
-    # @example
-    #   lines = normalize_output(%("14"\n"lucky"\n))  # => ["14", "lucky"]
-    #
-    def normalize_output(output)
-      output.gsub('"', '').lines.map(&:strip).reject(&:empty?)
-    end
-
-    ##
-    # Convenience for specs where scripts print with `pp`:
-    # Runs the file and returns normalized lines (see #normalize_output).
-    #
-    # If rand_value is provided, stubs bare `rand(...)` calls by
-    # intercepting Kernel#rand as invoked on Object instances
-    # (i.e., `rand(1..100)` with no explicit receiver).
-    #
-    # @param file_path [String]
-    # @param rand_value [Integer, nil] optional stub value for rand
-    # @return [Array<String>] normalized lines
-    #
-    # @example
-    #   lines = pp_lines_from("./lucky_number.rb", rand_value: 14)
-    #   expect(lines).to eq(%w[14 lucky])
-    #
-    def pp_lines_from(file_path, rand_value: nil)
-      if rand_value
-        # Requires RSpec mocks (this module is intended to be included in RSpec)
-        allow_any_instance_of(Object).to receive(:rand).and_return(rand_value)
-      end
-      normalize_output(run_script(file_path))
-    end
-
-    ##
-    # Temporarily replace $stdin with a StringIO seeded with given input.
-    #
-    # @param input [String] text that will be returned by gets/lines/etc.
-    # @yield block that will run with $stdin replaced
-    # @return [Object] block return value
-    #
-    # @example
-    #   with_stdin("7\n3\n") do
-    #     x = gets.to_i  # => 7
-    #     y = gets.to_i  # => 3
-    #   end
-    #
-    def with_stdin(input)
-      original_stdin = $stdin
-      $stdin = StringIO.new(input)
-      yield
-    ensure
-      $stdin = original_stdin
-    end
-
-    ##
-    # Run a Ruby script with provided stdin content, capturing its stdout.
-    #
-    # @param path [String] path to the script (e.g., "./calculator.rb")
-    # @param input [String] text passed to $stdin
-    # @return [String] captured stdout
-    #
-    # @example
-    #   output = run_script_with_input("./calculator.rb", "7\n3\n")
-    #
-    def run_script_with_input(path, input)
-      with_stdin(input) { run_script(path) }
-    end
-
-    ##
-    # Remove comment-only lines from a source string.
-    #
-    # This is useful in specs when you want to assert that a script
-    # uses certain operators (`+`, `-`, `%`, etc.) without matching
-    # against instructional comments.
-    #
-    # @param src [String] the file contents
-    # @return [String] source with comment-only lines removed
-    #
-    # @example
-    #   src = <<~RUBY
-    #     # add two numbers
-    #     x + y
-    #   RUBY
-    #
-    #   strip_comments(src)
-    #   # => "x + y\n"
-    #
-    def strip_comments(src)
+    def source_without_comments(src)
       src.lines.reject { |line| line.strip.start_with?("#") }.join
     end
+    alias strip_comments source_without_comments
   end
 end
