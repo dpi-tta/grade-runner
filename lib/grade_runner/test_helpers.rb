@@ -86,7 +86,6 @@ module GradeRunner
       stdout, _stderr, _status = run_script(path, stdin: stdin)
       normalize_output(stdout)
     end
-    alias pp_lines_from_capture3 pp_lines_from_run
 
     ##
     # Remove quotes, split into lines, strip, and reject empties.
