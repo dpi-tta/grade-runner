@@ -153,5 +153,28 @@ module GradeRunner
     def run_script_with_input(path, input)
       with_stdin(input) { run_script(path) }
     end
+
+    ##
+    # Remove comment-only lines from a source string.
+    #
+    # This is useful in specs when you want to assert that a script
+    # uses certain operators (`+`, `-`, `%`, etc.) without matching
+    # against instructional comments.
+    #
+    # @param src [String] the file contents
+    # @return [String] source with comment-only lines removed
+    #
+    # @example
+    #   src = <<~RUBY
+    #     # add two numbers
+    #     x + y
+    #   RUBY
+    #
+    #   strip_comments(src)
+    #   # => "x + y\n"
+    #
+    def strip_comments(src)
+      src.lines.reject { |line| line.strip.start_with?("#") }.join
+    end
   end
 end
