@@ -6,7 +6,6 @@ require "grade_runner/services/github_service"
 require "grade_runner/services/spec_service"
 require "grade_runner/services/grade_service"
 require "grade_runner/railtie" if defined?(Rails)
-require "grade_runner/test_helpers"
 
 module GradeRunner
   class Error < StandardError; end
