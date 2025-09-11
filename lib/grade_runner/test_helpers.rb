@@ -74,8 +74,8 @@ module GradeRunner
     # Run a script and return cleaned lines (quotes stripped, trimmed, no blanks).
     #
     # @return [Array<String>]
-    def run_script_and_capture_lines(path, stdin: "")
-      stdout, _stderr, _status = run_ruby(path, stdin: stdin)
+    def run_script_and_capture_lines(path, stdin: "", argv: [])
+      stdout, _stderr, _status = run_ruby(path, stdin:, argv:)
       clean_output_lines(stdout)
     end
     alias run_ruby_and_capture_lines run_script_and_capture_lines
@@ -83,8 +83,8 @@ module GradeRunner
     # Run a script and return raw stdout (string).
     #
     # @return [String]
-    def capture_raw_stdout_from(path, stdin: "")
-      stdout, _stderr, _status = run_ruby(path, stdin: stdin)
+    def capture_raw_stdout_from(path, stdin: "", argv: [])
+      stdout, _stderr, _status = run_ruby(path, stdin:, argv:)
       stdout
     end
 
